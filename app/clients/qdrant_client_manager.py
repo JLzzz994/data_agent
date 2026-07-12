@@ -77,4 +77,4 @@ if __name__ == '__main__':
             print(point.payload)
         await qdrant_client_manager.close()
 
-asyncio.run(test())
+    asyncio.run(test())

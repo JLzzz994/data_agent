@@ -1,9 +1,10 @@
 from pathlib import Path
 
-
 from fastapi_cloud_cli.utils.apps import AppConfig
 from omegaconf import OmegaConf, DictConfig
 from dataclasses import dataclass
+
+from app.conf.load_config import load_config
 
 
 # ==================== 日志配置模型 ====================
@@ -74,6 +75,7 @@ class LLMConfig:
     model_name: str
     api_key: str
 
+
 # ==================== 应用总配置模型 ====================
 
 @dataclass
@@ -86,10 +88,11 @@ class AppConfig:
     es: ESConfig
     llm: LLMConfig
 
+
 # 配置文件路径
 _yaml_path = Path(__file__).parents[2] / "conf" / "app_config.yaml"
-_yaml_data = OmegaConf.load(_yaml_path)
-app_config:AppConfig = OmegaConf.to_object(OmegaConf.merge(AppConfig, _yaml_data))
+
+app_config: AppConfig = load_config(_yaml_path, AppConfig)
 
 if __name__ == '__main__':
     # print(app_config)

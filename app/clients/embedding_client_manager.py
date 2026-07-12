@@ -31,4 +31,4 @@ if __name__ == '__main__':
         result = await embedding_client_manager.client.aembed_documents(["hello world","end the day"])
         print(result,)
         print(len(result))
-asyncio.run(test())
+    asyncio.run(test())
