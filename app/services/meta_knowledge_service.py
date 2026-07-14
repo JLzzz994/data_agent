@@ -180,15 +180,16 @@ class MetaKnowledgeService:
         # 1. 创建索引
         await self.column_value_es_repository.ensure_index()
         # 2. 创建文档对象列表 将yaml中sync=true的字段建立全文索引
-        need_column_names = [column.name for table in meta_config.tables for column in table.columns if column.sync]
+        need_column_names = {column.name for table in meta_config.tables for column in table.columns if column.sync}
         value_infos = []
         for column_info in column_infos:
             if column_info.name in need_column_names:
                 values: list[str] = await self.dw_mysql_repository.get_column_values(column_info.table_id,
-                                                                                     column_info.name, limit=1000000)
+                                                                                     column_info.name, limit=100000)
                 for value in values:
-                    value_info = ValueInfo(id=str(uuid.uuid4()), value=value, column_id=column_info.id)
+                    value_info = ValueInfo(id=f"{column_info.id}.{value}", value=value, column_id=column_info.id)
                     value_infos.append(value_info)
+
         # 3. 持久层存储
         await self.column_value_es_repository.upsert(value_infos)
 
@@ -236,6 +237,8 @@ class MetaKnowledgeService:
         await self.metric_qdrant_repository.upsert(ids, embeddings, payloads)
 
 if __name__ == '__main__':
-    meta_knowledge_service = MetaKnowledgeService()
-    config_file = Path(__file__).parents[2] / "conf" / "meta_config.yaml"
-    asyncio.run(meta_knowledge_service.build(config_file))
+    # meta_knowledge_service = MetaKnowledgeService()
+    # config_file = Path(__file__).parents[2] / "conf" / "meta_config.yaml"
+    # asyncio.run(meta_knowledge_service.build(config_file))
+    pass
+

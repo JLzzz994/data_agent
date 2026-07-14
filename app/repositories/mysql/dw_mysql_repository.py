@@ -32,3 +32,16 @@ class DWMSQLRepository:
         sql = f"select distinct {column_name} from {table_name} limit {limit}"
         result = await self.session.execute(text(sql))
         return result.scalars().all()
+
+    async def get_db_info(self):
+        name = self.session.get_bind().dialect.name
+        sql = "select version()"
+        result = await self.session.execute(text(sql))
+        return {"dialect": name, "version": result.scalar()}
+
+    async def validate_sql(self, sql:str):
+        await self.session.execute(text(f"explain {sql}"))
+
+    async def execute_sql(self, sql:str):
+        result = await self.session.execute(text(sql))
+        return [dict(mapping) for mapping in result.mappings().all()]

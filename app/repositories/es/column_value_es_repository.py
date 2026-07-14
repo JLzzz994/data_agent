@@ -1,6 +1,8 @@
 from dataclasses import asdict
 
+from elastic_transport import ObjectApiResponse
 from elasticsearch import AsyncElasticsearch
+from langchain_core.utils import comma_list
 
 from app.entities.value_info import ValueInfo
 
@@ -27,15 +29,29 @@ class ColumnValueESRepository:
             )
 
     async def upsert(self, value_infos: list[ValueInfo], batch_size: int = 100):
-        for i in range(0,len(value_infos),batch_size):
+        for i in range(0, len(value_infos), batch_size):
             operations = []
-            batch_values = value_infos[i:i+batch_size]
+            batch_values = value_infos[i:i + batch_size]
             for value_info in batch_values:
                 operations.append({
-                    "index":{
-                        "_index":self.index_name, # 类属性 表名
-                        "_id":value_info.id # 主键 uuid
+                    "index": {
+                        "_index": self.index_name,  # 类属性 表名
+                        "_id": value_info.id  # 主键 uuid
                     }
                 })
                 operations.append(asdict(value_info))
             await self.client.bulk(operations=operations)
+
+    async def asearch(self, keyword: str, score_threshold: float = 0.6, limit: int = 10) -> list[ValueInfo]:
+        result: ObjectApiResponse = await self.client.search(
+            index=self.index_name,
+            query={
+                "match": {
+                    "value": keyword
+                }
+            },
+            min_score=score_threshold,
+            size=limit
+        )
+        
+        return [ValueInfo(**hit["_source"]) for hit in result["hits"]["hits"]]

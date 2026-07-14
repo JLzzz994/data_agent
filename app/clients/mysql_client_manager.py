@@ -144,4 +144,5 @@ if __name__ == '__main__':
             await session.delete(table_info)
             await session.commit()
         await meta_mysql_client_manager.close()
-    asyncio.run(test_ORM2())
+    # asyncio.run(test_ORM2())
+
