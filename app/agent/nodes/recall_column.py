@@ -45,7 +45,7 @@ async def recall_column(state:DataAgentState,runtime:Runtime[DataAgentContext]):
         writer({"type": "progress", "step": "召回字段", "status": "success"})
         logger.info(f"召回字段信息:{retrieved_columns_dict.keys()}")
         return {"recall_columns": list(retrieved_columns_dict.values())}
-    except RuntimeError as e:
+    except Exception as e:
         # 5. 业务异常, 错误
         writer({"type": "progress", "step": "召回字段", "status": "error"})
         logger.error(f"召回字段失败{e}")

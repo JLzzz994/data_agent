@@ -2,6 +2,7 @@
 
 依据合并后的上下文与用户问题，调用 LLM 生成 SQL。
 """
+import yaml
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langgraph.runtime import Runtime
@@ -32,17 +33,23 @@ async def generate_sql(state: DataAgentState, runtime: Runtime[DataAgentContext]
         prompt = PromptTemplate(template=load_prompt("generate_sql"),
                                 input_variables=["query", "table_infos", "metric_infos", "date_info", "db_info"])
         chain = prompt | llm | StrOutputParser()
-        sql = await chain.ainvoke(
-            {"query": query, "table_infos": table_infos, "metric_infos": metric_infos, "date_info": date_info,
-             "db_info": db_info})
+        sql = await chain.ainvoke({
+            "query": query,
+            "table_infos": yaml.dump(table_infos, allow_unicode=True, sort_keys=False),
+            "metric_infos": yaml.dump(metric_infos, allow_unicode=True, sort_keys=False),
+            "db_info": yaml.dump(db_info, allow_unicode=True, sort_keys=False),
+            "date_info": yaml.dump(date_info, allow_unicode=True, sort_keys=False),
+             })
         # 3.3 业务没有异常写回state
 
         # 3.4 业务异常->校正sql
 
         # 4. 业务正常 成功
         writer({"type": "progress", "step": "生成sql", "status": "success"})
+        logger.info(f"生成SQL成功：{sql}")
         return {"sql": sql}
-    except RuntimeError as e:
+    except Exception as e:
         # 5. 业务异常, 错误
         writer({"type": "progress", "step": "生成sql", "status": "error"})
         logger.error(f"生成sql失败{e}")
+        raise

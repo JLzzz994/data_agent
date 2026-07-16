@@ -1,5 +1,5 @@
 import asyncio
-from _contextvars import ContextVar
+from contextvars import ContextVar
 
 # 创建一个用来存储请求id的contextvar对象
 _req_request_id = ContextVar("req_id", default="")

@@ -1,11 +1,11 @@
-import asyncio
+
 import uuid
 from pathlib import Path
 
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 from app.conf.load_config import load_config
-from app.conf.meta_config import MetaConfig, TableConfig, meta_config, MetricConfig
+from app.conf.meta_config import MetaConfig, TableConfig, MetricConfig
 from app.core.log import logger
 from app.entities.column_info import ColumnInfo
 from app.entities.metric_info import MetricInfo
@@ -42,7 +42,6 @@ class MetaKnowledgeService:
     async def build(self, config_file: Path):
         # 1. 加载配置文件
         meta_config: MetaConfig = load_config(config_file, MetaConfig)
-        # logger.info(meta_config.tables)
         # 2. 处理表信息
         if meta_config.tables:
             # 2.1 保存表信息到meta数据库
@@ -52,7 +51,7 @@ class MetaKnowledgeService:
             await self._save_column_info_to_dqrant(column_infos)
             logger.info(f"表字段信息存入向量库成功")
             # 2.3 为字段值建立全文索引
-            await self._save_column_values_to_es(column_infos)
+            await self._save_column_values_to_es(column_infos,meta_config)
             logger.info(f"表字段值信息存入ElasticSearch成功")
         # 3. 处理指标信息
         if meta_config.metrics:
@@ -171,10 +170,11 @@ class MetaKnowledgeService:
         payloads = [point["payload"] for point in points]
         await self.column_qdrant_repository.upsert(ids, embeddings, payloads)
 
-    async def _save_column_values_to_es(self, column_infos: list[ColumnInfo]):
+    async def _save_column_values_to_es(self, column_infos: list[ColumnInfo],meta_config: MetaConfig):
         """
         将部分字段的值 构建索引库文档对象存入ES
         :param column_infos: 字段信息列表
+        :param meta_config:
         :return:
         """
         # 1. 创建索引

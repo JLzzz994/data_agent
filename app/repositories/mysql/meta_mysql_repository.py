@@ -1,5 +1,3 @@
-import asyncio
-
 from sqlalchemy import text, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,7 +33,7 @@ class MetaMySQLRepository:
 
     async def get_column_info_by_id(self, column_id: str) -> ColumnInfo:
         '''根据字段id 查询字段'''
-        column_info_mysql: ColumnInfoMySQL | None = await self.session.get(ColumnInfoMySQL, column_id)
+        column_info_mysql: ColumnInfoMySQL = await self.session.get(ColumnInfoMySQL, column_id)
         return ColumnInfoMapper.to_entity(column_info_mysql)
 
     async def get_table_by_id(self, table_id: str):
@@ -47,27 +45,43 @@ class MetaMySQLRepository:
         table_info_mysql: TableInfoMySQL = await self.session.get(TableInfoMySQL, table_id)
         return TableInfoMapper.to_entity(table_info_mysql)
 
+    async def get_columns_by_ids(self, column_ids: list[str]):
+        '''
+        根据 column_id 列表批量查询字段信息
+        :param column_ids:
+        :return:
+        '''
+        if not column_ids:
+            return []
+
+        # 使用 in_ 查询批量获取
+        stmt = select(ColumnInfoMySQL).where(ColumnInfoMySQL.id.in_(column_ids))
+        result = await self.session.execute(stmt)
+        column_infos_mysql = result.scalars().all()
+
+        return [ColumnInfoMapper.to_entity(column_info_mysql) for column_info_mysql in column_infos_mysql]
+
     async def get_key_columns_by_table_id(self, table_id: str):
         '''
         根据 table_id 查询主外键
         :param table_id:
         :return:
         '''
-        sql = text('''
-                   select *
-                   from column_info
-                   where table_id = :table_id
-                     and role in ("primary_key", "foreign_key")
-                   ''')
-        query = select(ColumnInfoMySQL).from_statement(sql)
-        result = await self.session.execute(query,{"table_id": table_id})
-        return [ColumnInfoMapper.to_entity(key_column_info_mysql) for key_column_info_mysql in result.scalars().all()]
+
+        stmt = select(ColumnInfoMySQL).where(
+            ColumnInfoMySQL.table_id == table_id,
+            ColumnInfoMySQL.role.in_(["primary_key", "foreign_key"])
+        )
+        result = await self.session.scalars(stmt)
+
+        return [ColumnInfoMapper.to_entity(key_column_info_mysql) for key_column_info_mysql in result]
+
 
 if __name__ == '__main__':
     async def test_key_columns():
         meta_mysql_client_manager.init()
         assert meta_mysql_client_manager.session_factory
         async with meta_mysql_client_manager.session_factory() as session:
-            result  = await MetaMySQLRepository(session).get_key_columns_by_table_id("fact_order")
+            result = await MetaMySQLRepository(session).get_key_columns_by_table_id("fact_order")
             print(result)
     # asyncio.run(test_key_columns())

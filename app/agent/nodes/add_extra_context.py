@@ -35,7 +35,7 @@ async def add_extra_context(state:DataAgentState,runtime:Runtime[DataAgentContex
         writer({"type": "progress", "step": "补充上下文", "status": "success"})
         logger.info(f"补充上下文成功 日期是{date_info} 版本是{db_info}")
         return {"date_info": date_info, "db_info": db_info}
-    except RuntimeError as e:
+    except Exception as e:
         # 5. 业务异常, 错误
         writer({"type": "progress", "step": "补充上下文", "status": "error"})
         logger.error(f"补充上下文失败{e}")

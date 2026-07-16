@@ -40,10 +40,10 @@ class MetricQdrantRepository:
         for i in range(0, len(zipped), batch_size):
             batch = zipped[i:i + batch_size]
             points = [PointStruct(
-                id=i,
+                id=point_id,
                 vector=embedding,
                 payload=asdict(payload)
-            ) for i, embedding, payload in batch]
+            ) for point_id, embedding, payload in batch]
             await self.client.upsert(
                 collection_name=self.collection_name
                 , points=points

@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from fastapi_cloud_cli.utils.apps import AppConfig
-from omegaconf import OmegaConf, DictConfig
 from dataclasses import dataclass
 
 from app.conf.load_config import load_config
@@ -74,7 +72,8 @@ class ESConfig:
 class LLMConfig:
     model_name: str
     api_key: str
-
+    base_url:str
+    model_provider:str
 
 # ==================== 应用总配置模型 ====================
 

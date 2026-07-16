@@ -65,8 +65,8 @@ async def filter_table(state:DataAgentState,runtime:Runtime[DataAgentContext]):
 
         logger.info(f"过滤表/字段信息成功:{[table_info["name"]+"."+column_info["name"] for table_info in table_infos for column_info in table_info["columns"]]}")
         return {"table_infos":table_infos}
-    except RuntimeError as e:
+    except Exception as e:
         # 5. 业务异常, 错误
         writer({"type": "progress", "step": "过滤表/字段信息", "status": "error"})
         logger.error(f"过滤表/字段信息失败{e}")
-
+        raise

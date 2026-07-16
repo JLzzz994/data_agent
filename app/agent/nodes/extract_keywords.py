@@ -38,8 +38,8 @@ async def extract_keywords(state: DataAgentState, runtime: Runtime[DataAgentCont
         logger.info(f"抽取关键字成功{keywords}")
         return {"keywords": keywords}
 
-    except RuntimeError as e:
+    except Exception as e:
         # 5. 业务异常, 错误
         writer({"type": "progress", "step": "抽取关键字", "status": "error"})
         logger.error(f"抽取关键字失败{e}")
-        raise e
+        raise

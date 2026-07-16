@@ -47,4 +47,6 @@ es:
 # llm的配置
 llm:
   model_name: deepseek-v4-flash
-  api_key: sk-74257da0ac164f26b037ffef051aeb8a
+  api_key: sk-aGlz1erL7eCjMtq46QN55UBEsZ2jFG7ou8QW2fACNFVvqUcW
+  base_url: https://api.openai-proxy.org/v1
+  model_provider: "openai"

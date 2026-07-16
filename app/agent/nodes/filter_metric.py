@@ -41,8 +41,9 @@ async def filter_metric(state:DataAgentState,runtime:Runtime[DataAgentContext]):
         writer({"type": "progress", "step": "过滤指标", "status": "success"})
         logger.info(f"过滤指标成功:{metric_info_states}")
         return {"metric_infos": metric_info_states}
-    except RuntimeError as e:
+    except Exception as e:
         # 5. 业务异常, 错误
         writer({"type": "progress", "step": "过滤指标", "status": "error"})
         logger.error(f"过滤指标失败{e}")
+        raise
 

@@ -12,11 +12,12 @@ from app.conf.app_config import LLMConfig, app_config
 llm = init_chat_model(
     model=app_config.llm.model_name,
     api_key=app_config.llm.api_key,
-    temperature=0,
+    base_url=app_config.llm.base_url,
+    model_provider=app_config.llm.model_provider,
+    temperature = 0,
 )
 
 if __name__ == '__main__':
 
     for chunk in llm.stream("你是什么模型"):
-        print(chunk.text,end="",flush=True)
-
+        print(chunk.text, end="", flush=True)
