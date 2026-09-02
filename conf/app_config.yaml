@@ -1,4 +1,3 @@
-# 日志配置
 logging:
   file:
     enable: true
@@ -10,43 +9,38 @@ logging:
     enable: true
     level: INFO
 
-# 数据库meta的配置
 db_meta:
-  host: localhost
-  port: 3306
-  user: atguigu
-  password: Atguigu.123
-  database: meta
+  host: ${oc.env:META_DB_HOST,localhost}
+  port: ${oc.env:META_DB_PORT,3306}
+  user: ${oc.env:META_DB_USER,meta_reader}
+  password: ${oc.env:META_DB_PASSWORD,change-me}
+  database: ${oc.env:META_DB_NAME,meta}
 
-# 数据库dw的配置
 db_dw:
-  host: localhost
-  port: 3306
-  user: atguigu
-  password: Atguigu.123
-  database: dw
+  host: ${oc.env:DW_DB_HOST,localhost}
+  port: ${oc.env:DW_DB_PORT,3306}
+  user: ${oc.env:DW_DB_USER,huijingying_readonly}
+  password: ${oc.env:DW_DB_PASSWORD,change-me}
+  database: ${oc.env:DW_DB_NAME,dw}
 
-# qdrant的配置
-qdrant:
-  host: localhost
-  port: 6333
+milvus:
+  host: ${oc.env:MILVUS_HOST,localhost}
+  port: ${oc.env:MILVUS_PORT,19530}
+  token: ${oc.env:MILVUS_TOKEN,}
   embedding_size: 1024
 
-# embedding的配置
 embedding:
-  host: localhost
-  port: 9080
+  host: ${oc.env:EMBEDDING_HOST,localhost}
+  port: ${oc.env:EMBEDDING_PORT,9080}
   model: BAAI/bge-large-zh-v1.5
 
-# es的配置
 es:
-  host: localhost
-  port: 9200
-  index_name: data_agent
+  host: ${oc.env:ES_HOST,localhost}
+  port: ${oc.env:ES_PORT,9200}
+  index_name: huice-data-agent
 
-# llm的配置
 llm:
-  model_name: deepseek-v4-flash
-  api_key: sk-aGlz1erL7eCjMtq46QN55UBEsZ2jFG7ou8QW2fACNFVvqUcW
-  base_url: https://api.openai-proxy.org/v1
-  model_provider: "openai"
+  model_name: ${oc.env:LLM_MODEL,Qwen2.5-14B-Instruct}
+  api_key: ${oc.env:LLM_API_KEY,EMPTY}
+  base_url: ${oc.env:LLM_BASE_URL,http://localhost:8000/v1}
+  model_provider: openai

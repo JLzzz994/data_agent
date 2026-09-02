@@ -1,11 +1,8 @@
-from pathlib import Path
-
 from dataclasses import dataclass
+from pathlib import Path
 
 from app.conf.load_config import load_config
 
-
-# ==================== 日志配置模型 ====================
 
 @dataclass
 class Console:
@@ -28,8 +25,6 @@ class LoggingConfig:
     console: Console
 
 
-# ==================== database配置模型 ====================
-
 @dataclass
 class DBConfig:
     host: str
@@ -39,16 +34,13 @@ class DBConfig:
     database: str
 
 
-# ==================== Qdrant 配置模型 ====================
-
 @dataclass
-class QdrantConfig:
+class MilvusConfig:
     host: str
     port: int
+    token: str
     embedding_size: int
 
-
-# ==================== Embedding 配置模型 ====================
 
 @dataclass
 class EmbeddingConfig:
@@ -57,8 +49,6 @@ class EmbeddingConfig:
     model: str
 
 
-# ==================== ES 配置模型 ====================
-
 @dataclass
 class ESConfig:
     host: str
@@ -66,33 +56,24 @@ class ESConfig:
     index_name: str
 
 
-# ==================== LLM 配置模型 ====================
-
 @dataclass
 class LLMConfig:
     model_name: str
     api_key: str
-    base_url:str
-    model_provider:str
+    base_url: str
+    model_provider: str
 
-# ==================== 应用总配置模型 ====================
 
 @dataclass
 class AppConfig:
     logging: LoggingConfig
     db_meta: DBConfig
     db_dw: DBConfig
-    qdrant: QdrantConfig
+    milvus: MilvusConfig
     embedding: EmbeddingConfig
     es: ESConfig
     llm: LLMConfig
 
 
-# 配置文件路径
 _yaml_path = Path(__file__).parents[2] / "conf" / "app_config.yaml"
-
 app_config: AppConfig = load_config(_yaml_path, AppConfig)
-
-if __name__ == '__main__':
-    # print(app_config)
-    print(app_config.logging.console.level)

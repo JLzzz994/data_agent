@@ -12,6 +12,7 @@ from langgraph.runtime import Runtime
 
 from app.agent.context import DataAgentContext
 from app.agent.state import DataAgentState
+from app.core.evaluation_trace import emit_evaluation_trace
 from app.core.log import logger
 from app.prompt.prompt_loader import load_prompt
 
@@ -39,6 +40,11 @@ async def filter_metric(state:DataAgentState,runtime:Runtime[DataAgentContext]):
         # metric_info_states = [m for m in metric_info_states if m["name"] in result]
         # 4. 业务正常 成功
         writer({"type": "progress", "step": "过滤指标", "status": "success"})
+        emit_evaluation_trace(
+            writer,
+            "filtered_metrics",
+            metrics=[metric_info["name"] for metric_info in metric_info_states],
+        )
         logger.info(f"过滤指标成功:{metric_info_states}")
         return {"metric_infos": metric_info_states}
     except Exception as e:

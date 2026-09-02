@@ -9,6 +9,7 @@ from langgraph.runtime import Runtime
 from app.agent.context import DataAgentContext
 from app.agent.llm import llm
 from app.agent.state import DataAgentState, TableInfoState
+from app.core.evaluation_trace import emit_evaluation_trace
 from app.core.log import logger
 from app.prompt.prompt_loader import load_prompt
 
@@ -62,6 +63,15 @@ async def filter_table(state:DataAgentState,runtime:Runtime[DataAgentContext]):
 
         # 4. 业务正常 成功
         writer({"type": "progress", "step": "过滤表/字段信息", "status": "success"})
+        emit_evaluation_trace(
+            writer,
+            "filtered_tables",
+            tables=[table_info["name"] for table_info in table_infos],
+            columns={
+                table_info["name"]: [column["name"] for column in table_info["columns"]]
+                for table_info in table_infos
+            },
+        )
 
         logger.info(f"过滤表/字段信息成功:{[table_info["name"]+"."+column_info["name"] for table_info in table_infos for column_info in table_info["columns"]]}")
         return {"table_infos":table_infos}

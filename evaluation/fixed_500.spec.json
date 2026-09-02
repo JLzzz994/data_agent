@@ -1,0 +1,884 @@
+{
+  "version": "2026-09-02-v1",
+  "description": "慧经营 Text2SQL 固定评测集：50 个业务语义原型 × 10 种自然语言表达 = 500 条。",
+  "default_scope": {
+    "tenant_id": "tenant_hc_001",
+    "shop_ids": [
+      "shop_tmall_001",
+      "shop_jd_001"
+    ]
+  },
+  "order_sensitive": false,
+  "question_templates": [
+    "{core}",
+    "请帮我统计{core}",
+    "帮我看一下{core}",
+    "我想知道{core}",
+    "请查询{core}",
+    "按经营分析口径，统计{core}",
+    "从慧经营数据里看{core}",
+    "给我一份{core}的结果",
+    "麻烦分析{core}",
+    "请按业务口径计算{core}"
+  ],
+  "cases": [
+    {
+      "semantic_id": "paid-sales-shop-1",
+      "core": "2026年8月1日至8月31日各店铺支付销售额，并按支付销售额降序",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY paid_sales DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "gmv-shop-1",
+      "core": "2026年8月1日至8月31日各店铺GMV，并按GMV降序",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.goods_amount), 2) AS gmv FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY gmv DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "GMV"
+      ],
+      "tags": [
+        "aggregation",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "refund-rate-shop-1",
+      "core": "2026年8月1日至8月31日各店铺金额退款率，退款率按已退款金额除以实付销售额计算",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.refund_amount) / NULLIF(SUM(o.paid_amount), 0) * 100, 2) AS refund_rate FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY refund_rate DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "hard",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "refund_rate"
+      ],
+      "tags": [
+        "ratio",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "order-count-shop-1",
+      "core": "2026年8月1日至8月31日各店铺有效支付订单数",
+      "gold_sql": "SELECT s.shop_name AS shop_name, COUNT(DISTINCT o.order_id) AS order_count FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY order_count DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "count",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "quantity-shop-1",
+      "core": "2026年8月1日至8月31日各店铺销量件数",
+      "gold_sql": "SELECT s.shop_name AS shop_name, SUM(o.quantity) AS quantity FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY quantity DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "quantity",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-platform-1",
+      "core": "2026年8月1日至8月31日各电商平台支付销售额",
+      "gold_sql": "SELECT s.platform AS platform, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.platform ORDER BY paid_sales DESC, platform ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "platform"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-brand-1",
+      "core": "2026年8月1日至8月31日各品牌支付销售额",
+      "gold_sql": "SELECT g.brand AS brand, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.brand ORDER BY paid_sales DESC, brand ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-category-1",
+      "core": "2026年8月1日至8月31日各商品类目支付销售额",
+      "gold_sql": "SELECT g.category AS category, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.category ORDER BY paid_sales DESC, category ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "category"
+      ]
+    },
+    {
+      "semantic_id": "quantity-goods-1",
+      "core": "2026年8月1日至8月31日各商品销量件数",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(o.quantity) AS quantity FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.goods_name ORDER BY quantity DESC, goods_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "quantity",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "top-goods-paid-sales-1",
+      "core": "2026年8月1日至8月31日支付销售额最高的2个商品",
+      "gold_sql": "SELECT g.goods_name AS goods_name, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.goods_name ORDER BY paid_sales DESC, goods_name ASC LIMIT 2",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "topn",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "gross-profit-shop-1",
+      "core": "2026年8月1日至8月31日各店铺毛利，按实付金额减退款金额再减销售成本计算",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.paid_amount - o.refund_amount - o.cost_amount), 2) AS gross_profit FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY gross_profit DESC, shop_name ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "gross_profit"
+      ],
+      "tags": [
+        "profit",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "gross-margin-shop-1",
+      "core": "2026年8月1日至8月31日各店铺毛利率，毛利率按毛利除以实付销售额计算",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.paid_amount - o.refund_amount - o.cost_amount) / NULLIF(SUM(o.paid_amount), 0) * 100, 2) AS gross_margin FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY gross_margin DESC, shop_name ASC",
+      "category": "profitability",
+      "difficulty": "hard",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "gross_margin"
+      ],
+      "tags": [
+        "ratio",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "gross-profit-brand-1",
+      "core": "2026年8月1日至8月31日各品牌毛利",
+      "gold_sql": "SELECT g.brand AS brand, ROUND(SUM(o.paid_amount - o.refund_amount - o.cost_amount), 2) AS gross_profit FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.brand ORDER BY gross_profit DESC, brand ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "gross_profit"
+      ],
+      "tags": [
+        "profit",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "discount-shop-1",
+      "core": "2026年8月1日至8月31日各店铺优惠金额",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.discount_amount), 2) AS discount_amount FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY discount_amount DESC, shop_name ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "discount",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "cost-brand-1",
+      "core": "2026年8月1日至8月31日各品牌销售成本金额",
+      "gold_sql": "SELECT g.brand AS brand, ROUND(SUM(o.cost_amount), 2) AS cost_amount FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-01' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.brand ORDER BY cost_amount DESC, brand ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "cost",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "inventory-warehouse-1",
+      "core": "2026年9月1日库存快照中各仓库可用库存量",
+      "gold_sql": "SELECT w.warehouse_name AS warehouse_name, SUM(i.available_qty) AS available_inventory FROM fact_inventory_snapshot i JOIN dim_warehouse w ON i.warehouse_id = w.warehouse_id WHERE i.snapshot_date = '2026-09-01' GROUP BY w.warehouse_name ORDER BY available_inventory DESC, warehouse_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_warehouse"
+      ],
+      "expected_metrics": [
+        "available_inventory"
+      ],
+      "tags": [
+        "inventory",
+        "warehouse"
+      ]
+    },
+    {
+      "semantic_id": "low-inventory-goods-1",
+      "core": "2026年9月1日库存快照中可用库存低于10件的商品",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(i.available_qty) AS available_inventory FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.goods_name HAVING SUM(i.available_qty) < 10 ORDER BY available_inventory ASC, goods_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "available_inventory"
+      ],
+      "tags": [
+        "inventory",
+        "threshold"
+      ]
+    },
+    {
+      "semantic_id": "in-transit-goods-1",
+      "core": "2026年9月1日库存快照中在途库存大于0件的商品",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(i.in_transit_qty) AS in_transit_qty FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.goods_name HAVING SUM(i.in_transit_qty) > 0 ORDER BY in_transit_qty DESC, goods_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "inventory",
+        "in_transit"
+      ]
+    },
+    {
+      "semantic_id": "inventory-amount-category-1",
+      "core": "2026年9月1日库存快照中各商品类目的库存金额",
+      "gold_sql": "SELECT g.category AS category, ROUND(SUM(i.inventory_amount), 2) AS inventory_amount FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.category ORDER BY inventory_amount DESC, category ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "inventory_amount",
+        "category"
+      ]
+    },
+    {
+      "semantic_id": "inventory-goods-1",
+      "core": "2026年9月1日库存快照中各商品可用库存量",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(i.available_qty) AS available_inventory FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.goods_name ORDER BY available_inventory DESC, goods_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "available_inventory"
+      ],
+      "tags": [
+        "inventory",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "purchase-amount-warehouse-1",
+      "core": "2026年8月1日至8月31日各仓库采购金额",
+      "gold_sql": "SELECT wh.warehouse_name AS warehouse_name, ROUND(SUM(p.purchase_amount), 2) AS purchase_amount FROM fact_purchase p JOIN dim_warehouse wh ON p.warehouse_id = wh.warehouse_id WHERE p.purchase_time >= '2026-08-01' AND p.purchase_time < '2026-09-01' GROUP BY wh.warehouse_name ORDER BY purchase_amount DESC, warehouse_name ASC",
+      "category": "purchase",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_purchase",
+        "dim_warehouse"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "purchase",
+        "warehouse"
+      ]
+    },
+    {
+      "semantic_id": "purchase-qty-brand-1",
+      "core": "2026年8月1日至8月31日各品牌采购数量",
+      "gold_sql": "SELECT g.brand AS brand, SUM(p.purchase_qty) AS purchase_qty FROM fact_purchase p JOIN dim_goods g ON p.goods_id = g.goods_id WHERE p.purchase_time >= '2026-08-01' AND p.purchase_time < '2026-09-01' GROUP BY g.brand ORDER BY purchase_qty DESC, brand ASC",
+      "category": "purchase",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_purchase",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "purchase",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "purchase-amount-goods-1",
+      "core": "2026年8月1日至8月31日各商品采购金额",
+      "gold_sql": "SELECT g.goods_name AS goods_name, ROUND(SUM(p.purchase_amount), 2) AS purchase_amount FROM fact_purchase p JOIN dim_goods g ON p.goods_id = g.goods_id WHERE p.purchase_time >= '2026-08-01' AND p.purchase_time < '2026-09-01' GROUP BY g.goods_name ORDER BY purchase_amount DESC, goods_name ASC",
+      "category": "purchase",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_purchase",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "purchase",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "aftersale-refund-shop-1",
+      "core": "2026年8月1日至8月31日各店铺已完成售后的确认退款金额",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(a.confirmed_refund_amount), 2) AS confirmed_refund_amount FROM fact_after_sale a JOIN fact_trade_order o ON a.order_id = o.order_id JOIN dim_shop s ON o.shop_id = s.shop_id WHERE a.after_sale_time >= '2026-08-01' AND a.after_sale_time < '2026-09-01' AND a.after_sale_status = 'COMPLETED' GROUP BY s.shop_name ORDER BY confirmed_refund_amount DESC, shop_name ASC",
+      "category": "after_sale",
+      "difficulty": "hard",
+      "expected_tables": [
+        "fact_after_sale",
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "refund_amount"
+      ],
+      "tags": [
+        "after_sale",
+        "refund",
+        "multi_join"
+      ]
+    },
+    {
+      "semantic_id": "aftersale-count-type-1",
+      "core": "2026年8月1日至8月31日各售后类型的售后单数量",
+      "gold_sql": "SELECT a.after_sale_type AS after_sale_type, COUNT(DISTINCT a.after_sale_id) AS after_sale_count FROM fact_after_sale a WHERE a.after_sale_time >= '2026-08-01' AND a.after_sale_time < '2026-09-01' GROUP BY a.after_sale_type ORDER BY after_sale_count DESC, after_sale_type ASC",
+      "category": "after_sale",
+      "difficulty": "easy",
+      "expected_tables": [
+        "fact_after_sale"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "after_sale",
+        "count"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-shop-2",
+      "core": "2026年8月15日至8月31日各店铺支付销售额，并按支付销售额降序",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY paid_sales DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "gmv-shop-2",
+      "core": "2026年8月15日至8月31日各店铺GMV，并按GMV降序",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.goods_amount), 2) AS gmv FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY gmv DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "GMV"
+      ],
+      "tags": [
+        "aggregation",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "refund-rate-shop-2",
+      "core": "2026年8月15日至8月31日各店铺金额退款率，退款率按已退款金额除以实付销售额计算",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.refund_amount) / NULLIF(SUM(o.paid_amount), 0) * 100, 2) AS refund_rate FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY refund_rate DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "hard",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "refund_rate"
+      ],
+      "tags": [
+        "ratio",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "order-count-shop-2",
+      "core": "2026年8月15日至8月31日各店铺有效支付订单数",
+      "gold_sql": "SELECT s.shop_name AS shop_name, COUNT(DISTINCT o.order_id) AS order_count FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY order_count DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "count",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "quantity-shop-2",
+      "core": "2026年8月15日至8月31日各店铺销量件数",
+      "gold_sql": "SELECT s.shop_name AS shop_name, SUM(o.quantity) AS quantity FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY quantity DESC, shop_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "quantity",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-platform-2",
+      "core": "2026年8月15日至8月31日各电商平台支付销售额",
+      "gold_sql": "SELECT s.platform AS platform, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.platform ORDER BY paid_sales DESC, platform ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "platform"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-brand-2",
+      "core": "2026年8月15日至8月31日各品牌支付销售额",
+      "gold_sql": "SELECT g.brand AS brand, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.brand ORDER BY paid_sales DESC, brand ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "paid-sales-category-2",
+      "core": "2026年8月15日至8月31日各商品类目支付销售额",
+      "gold_sql": "SELECT g.category AS category, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.category ORDER BY paid_sales DESC, category ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "aggregation",
+        "category"
+      ]
+    },
+    {
+      "semantic_id": "quantity-goods-2",
+      "core": "2026年8月15日至8月31日各商品销量件数",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(o.quantity) AS quantity FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.goods_name ORDER BY quantity DESC, goods_name ASC",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "quantity",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "top-goods-paid-sales-2",
+      "core": "2026年8月15日至8月31日支付销售额最高的3个商品",
+      "gold_sql": "SELECT g.goods_name AS goods_name, ROUND(SUM(o.paid_amount), 2) AS paid_sales FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.goods_name ORDER BY paid_sales DESC, goods_name ASC LIMIT 3",
+      "category": "sales",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "paid_sales"
+      ],
+      "tags": [
+        "topn",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "gross-profit-shop-2",
+      "core": "2026年8月15日至8月31日各店铺毛利，按实付金额减退款金额再减销售成本计算",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.paid_amount - o.refund_amount - o.cost_amount), 2) AS gross_profit FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY gross_profit DESC, shop_name ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "gross_profit"
+      ],
+      "tags": [
+        "profit",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "gross-margin-shop-2",
+      "core": "2026年8月15日至8月31日各店铺毛利率，毛利率按毛利除以实付销售额计算",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.paid_amount - o.refund_amount - o.cost_amount) / NULLIF(SUM(o.paid_amount), 0) * 100, 2) AS gross_margin FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY gross_margin DESC, shop_name ASC",
+      "category": "profitability",
+      "difficulty": "hard",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "gross_margin"
+      ],
+      "tags": [
+        "ratio",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "gross-profit-brand-2",
+      "core": "2026年8月15日至8月31日各品牌毛利",
+      "gold_sql": "SELECT g.brand AS brand, ROUND(SUM(o.paid_amount - o.refund_amount - o.cost_amount), 2) AS gross_profit FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.brand ORDER BY gross_profit DESC, brand ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "gross_profit"
+      ],
+      "tags": [
+        "profit",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "discount-shop-2",
+      "core": "2026年8月15日至8月31日各店铺优惠金额",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(o.discount_amount), 2) AS discount_amount FROM fact_trade_order o JOIN dim_shop s ON o.shop_id = s.shop_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY s.shop_name ORDER BY discount_amount DESC, shop_name ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "discount",
+        "shop"
+      ]
+    },
+    {
+      "semantic_id": "cost-brand-2",
+      "core": "2026年8月15日至8月31日各品牌销售成本金额",
+      "gold_sql": "SELECT g.brand AS brand, ROUND(SUM(o.cost_amount), 2) AS cost_amount FROM fact_trade_order o JOIN dim_goods g ON o.goods_id = g.goods_id WHERE o.pay_time >= '2026-08-15' AND o.pay_time < '2026-09-01' AND o.order_status = 'PAID' GROUP BY g.brand ORDER BY cost_amount DESC, brand ASC",
+      "category": "profitability",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_trade_order",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "cost",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "inventory-warehouse-2",
+      "core": "2026年9月1日库存快照中各仓库可用库存量，只保留可用库存大于10件的仓库",
+      "gold_sql": "SELECT w.warehouse_name AS warehouse_name, SUM(i.available_qty) AS available_inventory FROM fact_inventory_snapshot i JOIN dim_warehouse w ON i.warehouse_id = w.warehouse_id WHERE i.snapshot_date = '2026-09-01' GROUP BY w.warehouse_name HAVING SUM(i.available_qty) > 10 ORDER BY available_inventory DESC, warehouse_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_warehouse"
+      ],
+      "expected_metrics": [
+        "available_inventory"
+      ],
+      "tags": [
+        "inventory",
+        "warehouse"
+      ]
+    },
+    {
+      "semantic_id": "low-inventory-goods-2",
+      "core": "2026年9月1日库存快照中可用库存低于20件的商品",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(i.available_qty) AS available_inventory FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.goods_name HAVING SUM(i.available_qty) < 20 ORDER BY available_inventory ASC, goods_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "available_inventory"
+      ],
+      "tags": [
+        "inventory",
+        "threshold"
+      ]
+    },
+    {
+      "semantic_id": "in-transit-goods-2",
+      "core": "2026年9月1日库存快照中在途库存大于10件的商品",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(i.in_transit_qty) AS in_transit_qty FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.goods_name HAVING SUM(i.in_transit_qty) > 10 ORDER BY in_transit_qty DESC, goods_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "inventory",
+        "in_transit"
+      ]
+    },
+    {
+      "semantic_id": "inventory-amount-category-2",
+      "core": "2026年9月1日库存快照中各商品类目的库存金额，只保留库存金额大于1000元的类目",
+      "gold_sql": "SELECT g.category AS category, ROUND(SUM(i.inventory_amount), 2) AS inventory_amount FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.category HAVING SUM(i.inventory_amount) > 1000 ORDER BY inventory_amount DESC, category ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "inventory_amount",
+        "category"
+      ]
+    },
+    {
+      "semantic_id": "inventory-goods-2",
+      "core": "2026年9月1日库存快照中各商品可用库存量，按可用库存从低到高排序",
+      "gold_sql": "SELECT g.goods_name AS goods_name, SUM(i.available_qty) AS available_inventory FROM fact_inventory_snapshot i JOIN dim_goods g ON i.goods_id = g.goods_id WHERE i.snapshot_date = '2026-09-01' GROUP BY g.goods_name ORDER BY available_inventory ASC, goods_name ASC",
+      "category": "inventory",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_inventory_snapshot",
+        "dim_goods"
+      ],
+      "expected_metrics": [
+        "available_inventory"
+      ],
+      "tags": [
+        "inventory",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "purchase-amount-warehouse-2",
+      "core": "2026年8月15日至8月31日各仓库采购金额",
+      "gold_sql": "SELECT wh.warehouse_name AS warehouse_name, ROUND(SUM(p.purchase_amount), 2) AS purchase_amount FROM fact_purchase p JOIN dim_warehouse wh ON p.warehouse_id = wh.warehouse_id WHERE p.purchase_time >= '2026-08-15' AND p.purchase_time < '2026-09-01' GROUP BY wh.warehouse_name ORDER BY purchase_amount DESC, warehouse_name ASC",
+      "category": "purchase",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_purchase",
+        "dim_warehouse"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "purchase",
+        "warehouse"
+      ]
+    },
+    {
+      "semantic_id": "purchase-qty-brand-2",
+      "core": "2026年8月15日至8月31日各品牌采购数量",
+      "gold_sql": "SELECT g.brand AS brand, SUM(p.purchase_qty) AS purchase_qty FROM fact_purchase p JOIN dim_goods g ON p.goods_id = g.goods_id WHERE p.purchase_time >= '2026-08-15' AND p.purchase_time < '2026-09-01' GROUP BY g.brand ORDER BY purchase_qty DESC, brand ASC",
+      "category": "purchase",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_purchase",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "purchase",
+        "brand"
+      ]
+    },
+    {
+      "semantic_id": "purchase-amount-goods-2",
+      "core": "2026年8月15日至8月31日各商品采购金额",
+      "gold_sql": "SELECT g.goods_name AS goods_name, ROUND(SUM(p.purchase_amount), 2) AS purchase_amount FROM fact_purchase p JOIN dim_goods g ON p.goods_id = g.goods_id WHERE p.purchase_time >= '2026-08-15' AND p.purchase_time < '2026-09-01' GROUP BY g.goods_name ORDER BY purchase_amount DESC, goods_name ASC",
+      "category": "purchase",
+      "difficulty": "medium",
+      "expected_tables": [
+        "fact_purchase",
+        "dim_goods"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "purchase",
+        "goods"
+      ]
+    },
+    {
+      "semantic_id": "aftersale-refund-shop-2",
+      "core": "2026年8月15日至8月31日各店铺已完成售后的确认退款金额",
+      "gold_sql": "SELECT s.shop_name AS shop_name, ROUND(SUM(a.confirmed_refund_amount), 2) AS confirmed_refund_amount FROM fact_after_sale a JOIN fact_trade_order o ON a.order_id = o.order_id JOIN dim_shop s ON o.shop_id = s.shop_id WHERE a.after_sale_time >= '2026-08-15' AND a.after_sale_time < '2026-09-01' AND a.after_sale_status = 'COMPLETED' GROUP BY s.shop_name ORDER BY confirmed_refund_amount DESC, shop_name ASC",
+      "category": "after_sale",
+      "difficulty": "hard",
+      "expected_tables": [
+        "fact_after_sale",
+        "fact_trade_order",
+        "dim_shop"
+      ],
+      "expected_metrics": [
+        "refund_amount"
+      ],
+      "tags": [
+        "after_sale",
+        "refund",
+        "multi_join"
+      ]
+    },
+    {
+      "semantic_id": "aftersale-count-type-2",
+      "core": "2026年8月15日至8月31日各售后类型已完成售后单数量",
+      "gold_sql": "SELECT a.after_sale_type AS after_sale_type, COUNT(DISTINCT a.after_sale_id) AS after_sale_count FROM fact_after_sale a WHERE a.after_sale_time >= '2026-08-15' AND a.after_sale_time < '2026-09-01' AND a.after_sale_status = 'COMPLETED' GROUP BY a.after_sale_type ORDER BY after_sale_count DESC, after_sale_type ASC",
+      "category": "after_sale",
+      "difficulty": "easy",
+      "expected_tables": [
+        "fact_after_sale"
+      ],
+      "expected_metrics": [],
+      "tags": [
+        "after_sale",
+        "count"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 [project]
 name = "data-agent"
-version = "0.1.0"
+version = "0.3.0"
 requires-python = ">=3.12"
 dependencies = [
     "async-lru>=2.3.0",
@@ -19,6 +19,7 @@ dependencies = [
     "langgraph==1.0.7",
     "loguru==0.7.3",
     "omegaconf==2.3.0",
-    "qdrant-client==1.16.2",
+    "pymilvus>=2.6.0,<2.7",
     "sqlalchemy==2.0.46",
+    "sqlglot>=25.0.0",
 ]

@@ -1,4 +1,4 @@
-from typing import Annotated, TypedDict, Any
+from typing import Any, TypedDict
 
 from app.entities.column_info import ColumnInfo
 from app.entities.metric_info import MetricInfo
@@ -29,29 +29,31 @@ class MetricInfoState(TypedDict):
 
 
 class DateInfoState(TypedDict):
-    date: str  # 日期
-    weekday: str  # 星期
-    quarter: str  # 季度
+    date: str
+    time: str
+    weekday: str
+    quarter: str
+    timezone: str
 
 
 class DBInfoState(TypedDict):
-    dialect: str  # 数据库方言
-    version: str  # 数据库版本
+    dialect: str
+    version: str
 
 
-class DataAgentState(TypedDict):
+class DataAgentState(TypedDict, total=False):
     query: str
     keywords: str
-
     recall_values: list[ValueInfo]
     recall_metrics: list[MetricInfo]
     recall_columns: list[ColumnInfo]
-
-    table_infos: list[TableInfoState]  # 合并后的表信息
-    metric_infos: list[MetricInfoState]  # 合并后的指标信息
-
-    date_info: DateInfoState  # 当前的日期信息
-    db_info: DBInfoState  # 数据库信息
-
-    sql: str  # 生成的SQL语句
-    error: str  # 校验sql产生的错误信息
+    table_infos: list[TableInfoState]
+    metric_infos: list[MetricInfoState]
+    date_info: DateInfoState
+    db_info: DBInfoState
+    sql: str
+    error: str | None
+    retry_count: int
+    max_rows: int
+    validation_stage: str | None
+    semantic_validation: str | None

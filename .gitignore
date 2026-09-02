@@ -4,12 +4,21 @@ __pycache__/
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
 
 # Virtual environments
-.venv
+.venv/
+venv/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Local tooling / logs
 /docker_windows/
 *.log
-*.idea
 .idea/
-/test
+
+# Generated evaluation reports
+reports/evaluation/

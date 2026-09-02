@@ -1,186 +1,285 @@
-# 需要同步到meta数据库的表信息及表的字段信息
-# 表信息 =》保存到table_info表
-# 字段信息 =》保存到column_info表
+# 慧经营智能问数 Demo 语义层。
+# 说明：这是面试/演示分支使用的业务化示例 Schema，不代表慧策线上真实表名。
+# 生产接入时应由数据团队治理高频表、主外键、指标和枚举值。
+
 tables:
-  - name: dim_region
+  - name: dim_shop
     role: dim
-    description: 地区维度表，用于描述订单发生的地理区域信息。
+    description: 电商店铺维度，描述店铺所属平台及经营主体。
     columns:
-      - name: region_id
+      - name: shop_id
         role: primary_key
-        description: 地区唯一标识。
-        alias: [ 地区ID, 区域ID ]
+        description: 店铺唯一标识。
+        alias: [店铺ID]
         sync: false
-
-      - name: province
+      - name: shop_name
         role: dimension
-        description: 订单所属的省份名称。
-        alias: [ 省份, 省, 所在省份 ]
+        description: 店铺名称。
+        alias: [店铺, 门店]
+        sync: true
+      - name: platform
+        role: dimension
+        description: 店铺所属电商平台，如淘宝、天猫、京东、抖音等。
+        alias: [平台, 渠道]
         sync: true
 
-      - name: region_name
-        role: dimension
-        description: 订单所属的大区名称，如华东、华南等。
-        alias: [ 地区, 区域, 大区 ]
-        sync: true
-
-      - name: country
-        role: dimension
-        description: 地区所属国家名称。
-        alias: [ 国家, 国家名称 ]
-        sync: true
-
-
-  - name: dim_customer
+  - name: dim_goods
     role: dim
-    description: 客户维度表，描述下单客户的基本属性。
+    description: 商品维度，描述商品编码、名称、品牌和类目。
     columns:
-      - name: customer_id
-        role: primary_key
-        description: 客户唯一标识。
-        alias: [ 客户ID, 用户ID ]
-        sync: false
-
-      - name: customer_name
-        role: dimension
-        description: 客户名称。
-        alias: [ 客户名称, 用户名称 ]
-        sync: true
-
-      - name: gender
-        role: dimension
-        description: 客户性别。
-        alias: [ 性别 ]
-        sync: true
-
-      - name: member_level
-        role: dimension
-        description: 客户会员等级。
-        alias: [ 会员等级, 用户等级 ]
-        sync: true
-
-
-  - name: dim_product
-    role: dim
-    description: 商品维度表，描述商品的基本属性信息。
-    columns:
-      - name: product_id
+      - name: goods_id
         role: primary_key
         description: 商品唯一标识。
-        alias: [ 商品ID, 产品ID ]
+        alias: [商品ID]
         sync: false
-
-      - name: product_name
+      - name: goods_no
+        role: dimension
+        description: 商家商品编码或货品编码。
+        alias: [商品编码, 货品编码, 商家编码]
+        sync: true
+      - name: goods_name
         role: dimension
         description: 商品名称。
-        alias: [ 商品名称, 产品名称 ]
+        alias: [商品, 货品, 商品名称]
         sync: true
-
-      - name: category
-        role: dimension
-        description: 商品所属品类。
-        alias: [ 商品类别, 品类, 分类 ]
-        sync: true
-
       - name: brand
         role: dimension
-        description: 商品品牌名称。
-        alias: [ 品牌, 品牌名称 ]
+        description: 商品品牌。
+        alias: [品牌]
+        sync: true
+      - name: category
+        role: dimension
+        description: 商品类目。
+        alias: [类目, 品类, 分类]
         sync: true
 
-
-  - name: dim_date
+  - name: dim_warehouse
     role: dim
-    description: 时间维度表，用于多时间粒度分析。
+    description: 仓库维度，描述仓库及区域。
     columns:
-      - name: date_id
+      - name: warehouse_id
         role: primary_key
-        description: 日期唯一标识，格式 yyyyMMdd。
-        alias: [ 日期ID, 日期 ]
+        description: 仓库唯一标识。
+        alias: [仓库ID]
         sync: false
-
-      - name: year
+      - name: warehouse_name
         role: dimension
-        description: 年份。
-        alias: [ 年, 年份 ]
-        sync: false
-
-      - name: quarter
+        description: 仓库名称。
+        alias: [仓库, 仓库名称]
+        sync: true
+      - name: warehouse_region
         role: dimension
-        description: 季度。
-        alias: [ 季度 ]
+        description: 仓库所在区域。
+        alias: [仓库区域, 区域]
         sync: true
 
-      - name: month
-        role: dimension
-        description: 月份。
-        alias: [ 月, 月份 ]
-        sync: false
-
-      - name: day
-        role: dimension
-        description: 日。
-        alias: [ 日, 天 ]
-        sync: false
-
-  - name: fact_order
+  - name: fact_trade_order
     role: fact
-    description: 订单事实表，记录订单数量和金额等核心指标。
+    description: 交易订单事实表，承载支付、优惠、退款、成本及履约相关经营分析。
     columns:
       - name: order_id
         role: primary_key
-        description: 订单唯一标识。
-        alias: [ 订单ID ]
+        description: ERP 订单唯一标识。
+        alias: [订单ID, 订单号]
         sync: false
-
-      - name: customer_id
+      - name: shop_id
         role: foreign_key
-        description: 关联客户维度的外键。
-        alias: [ 客户ID, 用户ID ]
+        description: 关联 dim_shop.shop_id。
+        alias: [店铺ID]
         sync: false
-
-      - name: product_id
+      - name: goods_id
         role: foreign_key
-        description: 关联商品维度的外键。
-        alias: [ 商品ID, 产品ID ]
+        description: 关联 dim_goods.goods_id。
+        alias: [商品ID]
         sync: false
-
-      - name: date_id
+      - name: warehouse_id
         role: foreign_key
-        description: 关联时间维度的外键。
-        alias: [ 日期, 下单日期 ]
+        description: 关联 dim_warehouse.warehouse_id。
+        alias: [仓库ID]
         sync: false
-
-      - name: region_id
-        role: foreign_key
-        description: 关联地区维度的外键。
-        alias: [ 地区ID, 区域ID ]
+      - name: pay_time
+        role: dimension
+        description: 订单支付时间，经营销售分析默认使用该时间口径。
+        alias: [支付时间, 成交时间]
         sync: false
-
-      - name: order_quantity
+      - name: order_status
+        role: dimension
+        description: ERP 订单状态。
+        alias: [订单状态, 状态]
+        sync: true
+      - name: quantity
         role: measure
-        description: 订单中商品的购买数量。
-        alias: [ 销量, 购买数量, 件数 ]
+        description: 商品购买件数。
+        alias: [销量, 件数, 数量]
         sync: false
-
-      - name: order_amount
+      - name: goods_amount
         role: measure
-        description: 订单金额。
-        alias: [ 销售额, 订单金额, 收入 ]
+        description: 商品原始成交金额，未扣优惠和退款。
+        alias: [商品金额, 原价金额]
+        sync: false
+      - name: discount_amount
+        role: measure
+        description: 平台及商家优惠金额。
+        alias: [优惠金额, 折扣金额]
+        sync: false
+      - name: paid_amount
+        role: measure
+        description: 买家实际支付金额。
+        alias: [实付金额, 支付金额, 销售额]
+        sync: false
+      - name: refund_amount
+        role: measure
+        description: 已确认退款金额。
+        alias: [退款金额]
+        sync: false
+      - name: cost_amount
+        role: measure
+        description: 商品销售成本金额。
+        alias: [成本, 成本金额]
         sync: false
 
-# 需要同步到meta库的指标信息
-# 指标信息 =》保存到metric_info表
-# metric_info的id和column_info的id => 保存到column_metric表中
+  - name: fact_inventory_snapshot
+    role: fact
+    description: 库存快照事实表，用于库存、可用库存、占用库存和库存金额分析。
+    columns:
+      - name: snapshot_date
+        role: dimension
+        description: 库存快照日期。
+        alias: [快照日期, 库存日期]
+        sync: false
+      - name: warehouse_id
+        role: foreign_key
+        description: 关联 dim_warehouse.warehouse_id。
+        alias: [仓库ID]
+        sync: false
+      - name: goods_id
+        role: foreign_key
+        description: 关联 dim_goods.goods_id。
+        alias: [商品ID]
+        sync: false
+      - name: available_qty
+        role: measure
+        description: 当前可销售库存数量。
+        alias: [可用库存, 可售库存]
+        sync: false
+      - name: occupied_qty
+        role: measure
+        description: 已被订单或任务占用的库存数量。
+        alias: [占用库存]
+        sync: false
+      - name: in_transit_qty
+        role: measure
+        description: 采购或调拨在途库存。
+        alias: [在途库存]
+        sync: false
+      - name: inventory_amount
+        role: measure
+        description: 库存成本金额。
+        alias: [库存金额, 库存成本]
+        sync: false
+
+  - name: fact_purchase
+    role: fact
+    description: 采购事实表，用于采购金额、采购入库和补货分析。
+    columns:
+      - name: purchase_id
+        role: primary_key
+        description: 采购单唯一标识。
+        alias: [采购单ID, 采购单号]
+        sync: false
+      - name: goods_id
+        role: foreign_key
+        description: 关联 dim_goods.goods_id。
+        alias: [商品ID]
+        sync: false
+      - name: warehouse_id
+        role: foreign_key
+        description: 关联 dim_warehouse.warehouse_id。
+        alias: [仓库ID]
+        sync: false
+      - name: purchase_time
+        role: dimension
+        description: 采购单创建时间。
+        alias: [采购时间]
+        sync: false
+      - name: purchase_qty
+        role: measure
+        description: 采购数量。
+        alias: [采购量, 采购数量]
+        sync: false
+      - name: purchase_amount
+        role: measure
+        description: 采购含税金额。
+        alias: [采购金额]
+        sync: false
+
+  - name: fact_after_sale
+    role: fact
+    description: 售后退款事实表，用于退款、退货、售后原因和售后效率分析。
+    columns:
+      - name: after_sale_id
+        role: primary_key
+        description: 售后单唯一标识。
+        alias: [售后单ID, 售后单号]
+        sync: false
+      - name: order_id
+        role: foreign_key
+        description: 关联 fact_trade_order.order_id。
+        alias: [订单ID, 订单号]
+        sync: false
+      - name: after_sale_time
+        role: dimension
+        description: 售后申请时间。
+        alias: [售后时间, 退款时间]
+        sync: false
+      - name: after_sale_type
+        role: dimension
+        description: 售后类型，如仅退款、退货退款、换货。
+        alias: [售后类型, 退款类型]
+        sync: true
+      - name: after_sale_status
+        role: dimension
+        description: 售后处理状态。
+        alias: [售后状态]
+        sync: true
+      - name: confirmed_refund_amount
+        role: measure
+        description: 已完成售后确认的退款金额。
+        alias: [确认退款金额, 实际退款金额]
+        sync: false
+
 metrics:
   - name: GMV
-    description: 全称Gross Merchandise Value，表示所有订单的成交金额总和。
-    relevant_columns:
-      - fact_order.order_amount
-    alias: [ 成交总额, 订单总额 ]
-  - name: AOV
-    description: 全称Average Order Value，表示所有订单的成交金额平均值。
-    relevant_columns:
-      - fact_order.order_amount
-      - fact_order.order_quantity
-    alias: [ 平均单价, 平均订单金额 ]
+    description: 商品成交总额，按支付时间统计，计算 SUM(fact_trade_order.goods_amount)；仅统计业务定义中的有效支付订单。
+    relevant_columns: [fact_trade_order.goods_amount, fact_trade_order.pay_time, fact_trade_order.order_status]
+    alias: [成交总额, 商品成交额]
+
+  - name: paid_sales
+    description: 实际支付销售额，按支付时间统计，计算 SUM(fact_trade_order.paid_amount)；仅统计有效支付订单。
+    relevant_columns: [fact_trade_order.paid_amount, fact_trade_order.pay_time, fact_trade_order.order_status]
+    alias: [支付金额, 实付销售额, 销售额]
+
+  - name: refund_amount
+    description: 已确认退款金额，优先使用 fact_after_sale.confirmed_refund_amount 汇总；按订单宽表分析可使用 fact_trade_order.refund_amount。
+    relevant_columns: [fact_after_sale.confirmed_refund_amount, fact_after_sale.after_sale_status, fact_trade_order.refund_amount]
+    alias: [退款金额, 售后退款金额]
+
+  - name: refund_rate
+    description: 退款率 = 已确认退款金额 / 实际支付销售额；分子分母使用相同统计范围，支付销售额为 0 时返回 NULL。
+    relevant_columns: [fact_after_sale.confirmed_refund_amount, fact_trade_order.paid_amount]
+    alias: [退款率, 金额退款率]
+
+  - name: gross_profit
+    description: 毛利 = 实际支付销售额 - 已确认退款金额 - 销售成本，即 SUM(paid_amount - refund_amount - cost_amount)。
+    relevant_columns: [fact_trade_order.paid_amount, fact_trade_order.refund_amount, fact_trade_order.cost_amount]
+    alias: [毛利, 毛利润]
+
+  - name: gross_margin
+    description: 毛利率 = 毛利 / 实际支付销售额；实际支付销售额为 0 时返回 NULL。
+    relevant_columns: [fact_trade_order.paid_amount, fact_trade_order.refund_amount, fact_trade_order.cost_amount]
+    alias: [毛利率, 销售毛利率]
+
+  - name: available_inventory
+    description: 指定库存快照日的可用库存量，计算 SUM(fact_inventory_snapshot.available_qty)。
+    relevant_columns: [fact_inventory_snapshot.snapshot_date, fact_inventory_snapshot.available_qty]
+    alias: [可用库存, 可售库存]
